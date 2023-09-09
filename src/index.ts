@@ -11,6 +11,7 @@ const app = new Elysia()
   .post(
     "/cut",
     ({ body: { videoUrl, startTime, duration } }) => {
+      const outputPath = "output.webm";
       return new Promise((resolve, reject) => {
         ffmpeg(videoUrl)
           .videoCodec("copy")
@@ -18,11 +19,11 @@ const app = new Elysia()
           .setStartTime(startTime)
           .setDuration(duration)
           .toFormat("webm")
-          .output("output.webm")
+          .output(outputPath)
           .on("end", () => resolve("Video processing finished"))
           .on("error", (err) => reject(err.message))
           .run();
-      });
+      }).then(() => Bun.file(outputPath));
     },
     {
       body: t.Object({
@@ -32,7 +33,7 @@ const app = new Elysia()
       }),
     }
   )
-  .listen(8080);
+  .listen(Bun.env.PORT || 3000);
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
