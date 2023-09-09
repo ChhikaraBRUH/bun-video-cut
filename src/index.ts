@@ -9,12 +9,15 @@ ffmpeg.setFfprobePath(ffprobeInstaller.path);
 const app = new Elysia()
   .get("/", () => "Hello, Crop server running")
   .post(
-    "/crop",
+    "/cut",
     ({ body: { videoUrl, startTime, duration } }) => {
       return new Promise((resolve, reject) => {
         ffmpeg(videoUrl)
+          .videoCodec("copy")
+          .noAudio()
           .setStartTime(startTime)
           .setDuration(duration)
+          .toFormat("webm")
           .output("output.webm")
           .on("end", () => resolve("Video processing finished"))
           .on("error", (err) => reject(err.message))
